@@ -1,0 +1,25 @@
+services:
+  catalogdb:
+    container_name: catalogdb
+    image: mongo
+    restart: always
+    ports:
+      - "27071:27017"          # host port : container port
+    volumes:
+      - mongo-data:/data/db
+
+  catalog:
+    container_name: catalog
+    build:
+      context: .
+      dockerfile: Catalog/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080       # Force HTTP for Swagger
+      - "MongoDbSettings:ConnectionString=mongodb://catalogdb:27017"  # container port
+    ports:
+      - "8080:8080"          # host port : container port
+    depends_on:
+      - catalogdb
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
